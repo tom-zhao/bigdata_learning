@@ -1,0 +1,54 @@
+--作业1
+--标准的 topn 问题
+with temp as (
+  select team,  year, row_number() over (partition by team order by year) as rn from t1 
+) 
+select team from (
+    select team, year, rn, (year - rn + 1) as start_year from temp
+) t
+group by team, start_year 
+having count(*) >= 3; 
+
+-----------------------------------------------------------------------------------------
+--作业2
+--通过窗口函数，对比前一条，后一条记录 ，判断波峰、波谷
+with temp_t as (
+    select id, time, price, 
+        lag(price, 1) over (partition by id order by time) as before_price, 
+        lead(price, 1) over (partition by id order by time) as follow_price 
+    from t2 
+) 
+select id, time, price, 
+      CASE 
+      WHEN price > before_price  THEN '波峰'
+      WHEN price < before_price  THEN '波谷'
+      END as title
+from (
+    select id, time, price, before_price, follow_price 
+    from temp_t
+    where (price > before_price and price > follow_price) 
+          or (price < before_price and price < follow_price) 
+) t;
+
+-----------------------------------------------------------------------------------------
+--作业3
+--通过session分隔之后，累加session标记得到当前记录的session number，统计id，session的步数
+
+with temp_t as (
+  select id, browseid, unix_timestamp(dt, 'yyyy/MM/dd HH:mm') as time, 
+          unix_timestamp(nvl(lag(dt, 1) over (partition by id order by dt), dt), 'yyyy/MM/dd HH:mm') as bef_time
+  from t3 
+)
+select id, sn, count(browseid) 
+from (
+    -- 通过累加标记得到当前记录是在那个session中
+    select id, time, browseid, 
+        sum(is_new_session) over (partition by id order by time ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as sn
+    from (
+        -- 通过和前一个时间来对比，是否是一个新session
+        select id, time, browseid, bef_time, if (time > bef_time + 1800, 1, 0) as is_new_session
+        from temp_t
+
+    ) tt
+) ttt
+group by id, sn;
