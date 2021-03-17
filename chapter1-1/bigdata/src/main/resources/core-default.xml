@@ -1,0 +1,21 @@
+<configuration>
+<property>
+    <name>fs.defaultFS</name>
+    <value>file:///</value>
+</property>
+    <property>
+        <name>fs.AbstractFileSystem.file.impl</name>
+        <value>org.apache.hadoop.fs.local.LocalFs</value>
+    </property>
+
+    <property>
+        <name>mapreduce.cluster.local.dir</name>
+        <value>/Users/tom_zhao_vip/workspace/07_study</value>
+        <description>
+        </description>
+    </property>
+    <property>
+        <name>fs.default.name</name>
+        <value>local</value>
+    </property>
+</configuration>

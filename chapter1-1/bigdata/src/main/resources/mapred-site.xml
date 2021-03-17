@@ -1,0 +1,8 @@
+<configuration>
+<property>
+    <name>mapreduce.cluster.local.dir</name>
+    <value>/Users/tom_zhao_vip/workspace/07_study</value>
+    <description>
+    </description>
+</property>
+</configuration>
