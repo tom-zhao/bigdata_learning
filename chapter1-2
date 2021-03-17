@@ -1,10 +1,13 @@
 --作业1
 --标准的 topn 问题
-with temp as (
-  select team,  year, row_number() over (partition by team order by year) as rn from t1 
+with temp_t as (
+    select team,  year, 
+        row_number() over (partition by team order by year) as rn 
+    from t1 
 ) 
 select team from (
-    select team, year, rn, (year - rn + 1) as start_year from temp
+    select team, year, rn, (year - rn + 1) as start_year 
+    from temp_t
 ) t
 group by team, start_year 
 having count(*) >= 3; 
