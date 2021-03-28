@@ -1,0 +1,15 @@
+
+with temp_t as (
+  select user_id, click_time, unix_timestamp(click_time, 'yyyy-MM-dd HH:mm') as time,
+          unix_timestamp(nvl(lag(click_time, 1) over (partition by user_id order by click_time), click_time), 'yyyy-MM-dd HH:mm') as bef_time
+  from user_clicklog
+)
+select user_id, click_time, row_number() over(partition by user_id,sn order by click_time) as sn_row
+from (
+    select user_id, click_time, time,
+        sum(is_new_session) over (partition by user_id order by time ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as sn
+    from (
+        select user_id, click_time, time, bef_time, if (time > bef_time + 1800, 1, 0) as is_new_session
+        from temp_t
+    ) tt
+) ttt;
